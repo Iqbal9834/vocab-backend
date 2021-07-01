@@ -22,35 +22,43 @@ const wordUtil = {
   getWord: async (word) => {
     const wordExist = await Word.exists({ id: word });
     if (wordExist) {
-      return "word already created";
+      throw new Error("word already exists");
     }
-    api_resp = await DictionaryService.GetWord(word);
-    lexicalEntries = api_resp.data.results[0].lexicalEntries[0];
-    sense = lexicalEntries.entries[0].senses[0];
-    if (lexicalEntries.phrases) {
-      var phrase = lexicalEntries.phrases[0];
+    try {
+      api_resp = await DictionaryService.GetWord(word);
+      lexicalEntries = api_resp.data.results[0].lexicalEntries[0];
+      sense = lexicalEntries.entries[0].senses[0];
+      if (lexicalEntries.phrases) {
+        var phrase = lexicalEntries.phrases[0].text;
+      }
+      if (sense.examples) {
+        var example = sense.examples[0].text;
+      }
+      if (sense.definitions) {
+        var definition = sense.definitions[0];
+      }
+      if (sense.synonyms) {
+        var synonym = sense.synonyms[0].text;
+      }
+      var data = {
+        id: word,
+        lexicalCategory: lexicalEntries.lexicalCategory.text,
+        definition: definition,
+        example: example,
+        synonym: synonym,
+        phrase: phrase,
+      };
+      resp = await Word.create(data);
+      mongoCache.del(key);
+      return await Word.findOne({ id: word }).lean();
+    } catch (e) {
+      throw new Error(e.response.data.error)
     }
-    if(sense.examples){
-        var example = sense.examples[0].text
-    }
-    if(sense.definition){
-        var definition = sense.definitions[0]
-    }
-    if(sense.synonyms){
-        var synonym = sense.synonyms[0].text
-    }
-    var data = {
-      id: word,
-      lexicalCategory: lexicalEntries.lexicalCategory.text,
-      definition: definition,
-      example: example,
-      synonym: synonym,
-      phrase: phrase,
-    };
-    resp = await Word.create(data);
-    mongoCache.del(key);
-    return await Word.findOne({id: word})
   },
+  getById: async(word) => {
+    const res = await Word.findOne({ id: word }).lean();
+    return res
+  }
 };
 
 module.exports = wordUtil;

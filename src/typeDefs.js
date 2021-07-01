@@ -3,6 +3,7 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   type Query {
     words: [Word!]!
+    getWord(id: String): Word!
   }
   type Word {
     id: String,

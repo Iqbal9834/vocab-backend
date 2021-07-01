@@ -1,16 +1,19 @@
-const Word = require("./models/Word")
-const wordUtil = require("./utils/data")
+const Word = require("./models/Word");
+const wordUtil = require("./utils/data");
 // const { mongoCache } = require("../controllers/wordController");
 // const { key, ttl } = require("../../config");
 
 const resolvers = {
   Query: {
-    words: () => wordUtil.data()
+    words: () => wordUtil.data(),
+    getWord: (root, { id }) => {
+      return wordUtil.getById(id)
+    }
   },
   Mutation: {
     create: async (_, { word }) => {
-      wordUtil.getWord(word)
+      return wordUtil.getWord(word);
     }
   }
 };
-module.exports = resolvers
+module.exports = resolvers;
